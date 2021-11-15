@@ -89,7 +89,13 @@ import com.netflix.servo.monitor.Monitors;
 import com.netflix.servo.monitor.Stopwatch;
 
 /**
+ * 这个类是用于与Eureka Server交互的类
  * The class that is instrumental for interactions with <tt>Eureka Server</tt>.
+ *
+ * 1. 注册
+ * 2. 续约
+ * 3. 下线
+ * 4. 查询服务列表
  *
  * <p>
  * <tt>Eureka Client</tt> is responsible for a) <em>Registering</em> the
@@ -100,6 +106,10 @@ import com.netflix.servo.monitor.Stopwatch;
  * d) <em>Querying</em> the list of services/instances registered with
  * <tt>Eureka Server</tt>
  * <p>
+ *
+ *
+ * client一般会取Eureka Server的列表，如果与其中一个通信失败，会尝试和列表其他的Server进行通信
+ *
  *
  * <p>
  * <tt>Eureka Client</tt> needs a configured list of <tt>Eureka Server</tt>

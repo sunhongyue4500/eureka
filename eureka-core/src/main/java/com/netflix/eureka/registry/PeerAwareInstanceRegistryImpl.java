@@ -63,6 +63,8 @@ import javax.inject.Singleton;
 import static com.netflix.eureka.Names.METRIC_REGISTRY_PREFIX;
 
 /**
+ * 处理集群复制的所有操作
+ *
  * Handles replication of all operations to {@link AbstractInstanceRegistry} to peer
  * <em>Eureka</em> nodes to keep them all in sync.
  *
@@ -101,6 +103,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
     private boolean peerInstancesTransferEmptyOnStartup = true;
 
     public enum Action {
+        // 针对注册表的行为：心跳，注册，下线，状态更新
         Heartbeat, Register, Cancel, StatusUpdate, DeleteStatusOverride;
 
         private com.netflix.servo.monitor.Timer timer = Monitors.newTimer(this.name());
@@ -117,7 +120,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
     };
 
     private final MeasuredRate numberOfReplicationsLastMin;
-
+    // 持有一个EurekaClient
     protected final EurekaClient eurekaClient;
     protected volatile PeerEurekaNodes peerEurekaNodes;
 
@@ -134,6 +137,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
             EurekaClient eurekaClient
     ) {
         super(serverConfig, clientConfig, serverCodecs);
+        // 这里初始化的是之前EurekaServerAutoConfiguration.java注入的CloudEurekaClient
         this.eurekaClient = eurekaClient;
         this.numberOfReplicationsLastMin = new MeasuredRate(1000 * 60 * 1);
         // We first check if the instance is STARTING or DOWN, then we check explicit overrides,
@@ -219,11 +223,15 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
                     break;
                 }
             }
+            // eurekaClient是CloudEurekaClient类型，继承自DiscoveryClient
+            // 作为client与server进行通信，拿到所有的服务信息
             Applications apps = eurekaClient.getApplications();
+            // 拿到每一个服务，并且拿到每个服务里的服务实例
             for (Application app : apps.getRegisteredApplications()) {
                 for (InstanceInfo instance : app.getInstances()) {
                     try {
                         if (isRegisterable(instance)) {
+                            // 注册到当前server
                             register(instance, instance.getLeaseInfo().getDurationInSecs(), true);
                             count++;
                         }
@@ -233,28 +241,33 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
                 }
             }
         }
-        return count;
+        return count;   // 返回注册的实例个数
     }
 
+    // 打开流量
     @Override
     public void openForTraffic(ApplicationInfoManager applicationInfoManager, int count) {
         // Renewals happen every 30 seconds and for a minute it should be a factor of 2.
-        this.expectedNumberOfClientsSendingRenews = count;
+        this.expectedNumberOfClientsSendingRenews = count;  // 用于下个方法的计算
+        // 更新续约每分钟阈值
         updateRenewsPerMinThreshold();
         logger.info("Got {} instances from neighboring DS node", count);
         logger.info("Renew threshold is: {}", numberOfRenewsPerMinThreshold);
+        // Server的启动时间
         this.startupTime = System.currentTimeMillis();
         if (count > 0) {
+            // 一个标记
             this.peerInstancesTransferEmptyOnStartup = false;
         }
         DataCenterInfo.Name selfName = applicationInfoManager.getInfo().getDataCenterInfo().getName();
-        boolean isAws = Name.Amazon == selfName;
+        boolean isAws = Name.Amazon == selfName;    // 这里一般不是aws
         if (isAws && serverConfig.shouldPrimeAwsReplicaConnections()) {
             logger.info("Priming AWS connections for all replicas..");
             primeAwsReplicas(applicationInfoManager);
         }
         logger.info("Changing status to UP");
         applicationInfoManager.setInstanceStatus(InstanceStatus.UP);
+        // 启动一些定时任务，比如剔除任务
         super.postInit();
     }
 
@@ -599,6 +612,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
     }
 
     /**
+     * 检查一个实例是否是可注册的，别的region被拒绝
      * Checks if an instance is registerable in this region. Instances from other regions are rejected.
      *
      * @param instanceInfo  th instance info information of the instance
@@ -606,7 +620,8 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
      */
     public boolean isRegisterable(InstanceInfo instanceInfo) {
         DataCenterInfo datacenterInfo = instanceInfo.getDataCenterInfo();
-        String serverRegion = clientConfig.getRegion();
+        String serverRegion = clientConfig.getRegion(); // 拿到当前server所在的region
+        // 一般是非Amazon，不进if
         if (AmazonInfo.class.isInstance(datacenterInfo)) {
             AmazonInfo info = AmazonInfo.class.cast(instanceInfo.getDataCenterInfo());
             String availabilityZone = info.get(MetaDataKey.availabilityZone);
@@ -618,6 +633,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
                 return true;
             }
         }
+        // 所有非Amazon的都是允许注册的
         return true; // Everything non-amazon is registrable.
     }
 

@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 应用实例注册表接口。它继承了 LookupService 、LeaseManager 接口，
+ * 提供应用实例的注册与发现服务。另外，它结合实际业务场景，定义了更加丰富的接口方法
+ *
  * @author Tomasz Bak
  */
 public interface InstanceRegistry extends LeaseManager<InstanceInfo>, LookupService<String> {

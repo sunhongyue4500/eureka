@@ -47,6 +47,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
+ * 这个类封装了eureka server返回的所有注册信息
  * The class that wraps all the registry information returned by eureka server.
  *
  * <p>
@@ -82,8 +83,10 @@ public class Applications {
 
     private String appsHashCode;
     private Long versionDelta;
+    // 基于链表的线程安全的
     @XStreamImplicit
     private final AbstractQueue<Application> applications;
+    // ConcurrentHashMap类型，线程安全
     private final Map<String, Application> appNameApplicationMap;
     private final Map<String, VipIndexSupport> virtualHostNameAppMap;
     private final Map<String, VipIndexSupport> secureVirtualHostNameAppMap;

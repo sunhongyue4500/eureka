@@ -136,6 +136,8 @@ public interface EurekaServerConfig {
     int getRenewalThresholdUpdateIntervalMs();
 
     /**
+     * 自我保护模式涉及到这个数值的调整
+     *
      * The interval with which clients are expected to send their heartbeats. Defaults to 30
      * seconds. If clients send heartbeats with different frequency, say, every 15 seconds, then
      * this parameter should be tuned accordingly, otherwise, self-preservation won't work as

@@ -28,6 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 应用实例信息管理器（单例的）
+ * 该类初始化向Eureka Server注册所需的信息，并由其他组件发现。
+ *
  * The class that initializes information required for registration with
  * <tt>Eureka Server</tt> and to be discovered by other components.
  *
@@ -172,6 +175,7 @@ public class ApplicationInfoManager {
 
         InstanceStatus prev = instanceInfo.setStatus(next);
         if (prev != null) {
+            // 观察者模式？
             for (StatusChangeListener listener : listeners.values()) {
                 try {
                     listener.notify(new StatusChangeEvent(prev, next));

@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 具体某个实例
  * The class that holds information required for registration with
  * <tt>Eureka Server</tt> and to be discovered by other components.
  * <p>

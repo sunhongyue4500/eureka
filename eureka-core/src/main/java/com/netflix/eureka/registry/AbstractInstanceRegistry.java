@@ -1186,6 +1186,10 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
     }
 
     protected void updateRenewsPerMinThreshold() {
+        // 比如expectedNumberOfClientsSendingRenews=3，getExpectedClientRenewalIntervalSeconds=30
+        // getRenewalPercentThreshold
+        // expected-client-renewal-interval-seconds: 默认30s
+        // renewal-percent-threshold: 默认0.85
         this.numberOfRenewsPerMinThreshold = (int) (this.expectedNumberOfClientsSendingRenews
                 * (60.0 / serverConfig.getExpectedClientRenewalIntervalSeconds())
                 * serverConfig.getRenewalPercentThreshold());

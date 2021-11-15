@@ -31,6 +31,7 @@ public interface PeerAwareInstanceRegistry extends InstanceRegistry {
     void init(PeerEurekaNodes peerEurekaNodes) throws Exception;
 
     /**
+     * 从peer 节点获取注册信息，如果通信失败会从其他节点获取，直到列表耗尽
      * Populates the registry information from a peer eureka node. This
      * operation fails over to other nodes until the list is exhausted if the
      * communication fails.
